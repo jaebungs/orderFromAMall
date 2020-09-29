@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- Optional JavaScript -->
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"
+            integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+
+    <!-- 구글폰트 -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap"
+          rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .wrap {
+            width: 500px;
+            margin: 25px auto;
+        }
+
+        .item-img {
+            height: 300px;
+            width: 500px;
+            background-image: url("https://t1.daumcdn.net/liveboard/nts/5bcccfbd33da4865817b9c606b6b852e.JPG");
+            background-position: center;
+            background-size: cover;
+
+        }
+
+        .container {
+            margin: 10px 0;
+        }
+
+        .price {
+            font-size: 16px;
+        }
+
+        .exchange-rate {
+            color: blue;
+        }
+
+        .input-group {
+            padding: 2px 0;
+        }
+
+        .btn {
+            display: block;
+            margin: auto;
+            padding: 10px 15px;
+        }
+
+        .order-container {
+            text-align: center;
+            align-content: center;
+            margin: 25px;
+        }
+
+        .order-list {
+            width: 70%;
+            margin: auto;
+        }
+
+    </style>
+
+    <script>
+        // when website is done loading
+        $(document).ready(function () {
+            exchange_rate()
+            $('#order-box').html('')
+            view_orders()
+        });
+
+        // GET exchange rate
+        function exchange_rate() {
+            $.ajax({
+                type: "GET",
+                url: "https://api.manana.kr/exchange/rate.json",
+                data: {},
+                success: function (response) {
+                    let USrate = response[1]['rate']
+                    let tempHTML = `<p>Exchange Rate KRW - USD: ${USrate}</p>`
+                    $('#rate').append(tempHTML)
+                }
+            })
+        }
+
+        //GET order data from server then display
+        function view_orders() {
+            $.ajax({
+                type: "GET",
+                url: "/order",
+                data: {},
+                success: function (response) {
+                    let orders = response['orders']
+
+                    for (let i = 0; i < orders.length; i++) {
+                        let name = orders[i]['name']
+                        let quantity = orders[i]['quantity']
+                        let address = orders[i]['address']
+                        let phone = orders[i]['phone']
+
+                        let temp_html = `
+                            <tr>
+                                <th scope="row">${i + 1}</th>
+                                <td>${name}</td>
+                                <td>${quantity}</td>
+                                <td>${address}</td>
+                                <td>${phone}</td>
+                            </tr>
+                        `
+                        $('#order-box').append(temp_html)
+                    }
+
+                }
+            })
+        }
+
+        // when order button is pressed, POST order detail values the server
+        function order() {
+            let name = $('#name').val()
+            let quantity = $('#inputGroupSelect01').val()
+            let address = $('#address').val()
+            let phone = $('#phone').val()
+
+            $.ajax({
+                type: "POST",
+                url: "/order",
+                data: {
+                    'name_give': name,
+                    'quantity_give': quantity,
+                    'address_give': address,
+                    'phone_give': phone
+                },
+                success: function (response) {
+                    if (response['result'] == 'success') {
+                        alert(response['msg'])
+                        window.location.reload()
+                    }
+                }
+            })
+        }
+
+    </script>
+
+
+</head>
+
+<body>
+
+<div class="wrap">
+    <div class="item-img">
+    </div>
+    <div class="container">
+        <h2>Horses for sales <span class="price">Price: Negotiable</span></h2>
+        <p class="lead">They are my best friends, but they way too big for my place.</p>
+    </div>
+
+    <div class="exchange-rate" id="rate">
+
+    </div>
+
+    <div class="input-boxes">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon1">Customer Name</span>
+            </div>
+            <input type="text" class="form-control" id="name" aria-describedby="basic-addon1">
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <label class="input-group-text inputGroup-sizing-sm" for="inputGroupSelect01">Quantity</label>
+            </div>
+            <select class="custom-select" id="inputGroupSelect01">
+                <option selected>--Choose quantity--</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+            </select>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">Address</span>
+            </div>
+            <input type="text" id="address" class="form-control" aria-label="Sizing example input"
+                   aria-describedby="inputGroup-sizing-default">
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Phone Number</span>
+            </div>
+            <input type="text" id="phone" class="form-control" aria-describedby="basic-addon1">
+        </div>
+        <button class="btn btn-primary" onclick="order()" type="submit">Order</button>
+
+    </div>
+
+</div>
+<div class="order-container">
+    <table class="table table-striped order-list">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Customer Name</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Address</th>
+            <th scope="col">Phone Number</th>
+        </tr>
+        </thead>
+        <tbody id="order-box">
+        <tr>
+            <th scope="row">1</th>
+            <td>Mark</td>
+            <td>Otto</td>
+            <td>@mdo</td>
+        </tr>
+        <tr>
+            <th scope="row">2</th>
+            <td>Jacob</td>
+            <td>Thornton</td>
+            <td>@fat</td>
+        </tr>
+        <tr>
+            <th scope="row">3</th>
+            <td>Larry</td>
+            <td>the Bird</td>
+            <td>@twitter</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
